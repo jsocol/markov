@@ -1,0 +1,33 @@
+from collections import defaultdict
+
+from . import gram_utils
+from .text import normalize_text, END_OF_TEXT
+
+
+def count_ngrams(text, n=3):
+    n += 1
+    ngrams = defaultdict(int)
+    text = normalize_text(text)
+
+    for i in range(0, len(text) - (n - 1)):
+        gram = text[i:i+n]
+        ngrams[gram] += 1
+    last_gram = text[-(n - 1):] + END_OF_TEXT
+    ngrams[last_gram] += 1
+    return dict(ngrams)
+
+
+def generate(text, n=3):
+    ngrams = count_ngrams(text, n)
+    ngrams = gram_utils.ngram_next(ngrams, n)
+    return gram_utils.generate_from_grams(ngrams, n)
+
+
+def generate_from_samples(samples, n=3):
+    ngrams = {}
+    for sample in samples:
+        sample_grams = count_ngrams(sample, n)
+        sample_grams = gram_utils.ngram_next(sample_grams, n)
+        ngrams = gram_utils.merge_grams(ngrams, sample_grams)
+
+    return gram_utils.generate_from_grams(ngrams, n)
